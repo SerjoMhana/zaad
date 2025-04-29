@@ -10,12 +10,14 @@ module.exports = {
     
       
       },
-      
-    colors: {
- 
     
+    colors: {
+      // You can define custom colors here
     },
     extend: {
+      colors: {
+        'zad-green': '#4CAF50', // A shade of green inspired by the logo
+      },
       backgroundImage: {
        
 

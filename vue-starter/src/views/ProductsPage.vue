@@ -1,6 +1,6 @@
 <template>
   <div>
-    <FirstSection title="منتجاتنا" description="للتواصل مع فريق الدعم الفني يرجى ملء النموذج" />
+    <FirstSection title="منتجاتنا" description="اكتشف مجموعتنا الواسعة من المنتجات المميزة" />
     <ProductSection />
   </div>
 </template>

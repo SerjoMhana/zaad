@@ -1,31 +1,59 @@
 <template>
-  <div  class="product-section">
-<div class="filter bg-gradient-to-r from-white to-gray-50">
-  <h2 class="mb-8 text-center text-zad-green text-2xl">تصنيفات</h2>
-  <div class="filter-buttons">
-    <button @click="selectedCategory = 'all'">جميع المنتجات</button>
-    <button @click="selectedCategory = 'الموروث الليبي'">الموروث الليبي</button>
-    <button @click="selectedCategory = 'البهارات'">البهارات</button>
-    <button @click="selectedCategory = 'الزيوت الطبيعية'">الزيوت الطبيعية</button>
-    <button @click="selectedCategory = 'الأعشاب الطبيعية'">الأعشاب الطبيعية</button>
-    <button @click="selectedCategory = 'العسل'">العسل</button>
-  </div>
-</div>
-    <div dir="ltr" class="products">
-      <ProductCard v-for="product in filteredProducts" :key="product.id" :product="product" @click="navigateToProduct(product.id)" style="cursor: pointer;" />
+  <div v-if="product" class="product-detail-view container mx-auto px-4 py-8 flex flex-row mt-12">
+    <!-- Image Section (Right - 1/4 width) -->
+    <div class="w-1/4 pr-8 order-2">
+      <div class="main-image mb-4">
+        <img :src="mainImage" :alt="product.name" class="w-full h-auto object-cover rounded border">
+      </div>
+      <div class="thumbnail-images flex justify-between">
+        <img
+          v-for="(image, index) in product.images"
+          :key="index"
+          :src="image"
+          :alt="`${product.name} thumbnail ${index + 1}`"
+          class="w-1/4 cursor-pointer rounded border hover:opacity-75"
+          :class="{ 'border-2 border-blue-500': image === mainImage }"
+          @click="setMainImage(image)"
+        >
+      </div>
     </div>
+
+    <!-- Details Section (Left - 3/4 width) -->
+    <div class="w-3/4 pl-8 order-1">
+      <h1 class="text-3xl font-bold mb-4">{{ product.name }}</h1>
+      <p class="text-gray-700 mb-6">{{ product.description }}</p>
+      <p class="text-2xl font-semibold text-green-600 mb-6">{{ product.price }}دينار</p>
+
+      <div class="quantity-selector mb-6 flex items-center">
+        <label for="quantity" class="px-4 py-2  font-medium text-gray-700">الكمية:</label>
+        <button @click="decreaseQuantity" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 transition duration-150 ease-in-out text-gray-700 font-bold">-</button>
+        <input
+          type="number"
+          id="quantity"
+          v-model.number="quantity"
+          min="1"
+          class="w-16 text-center focus:outline-none text-gray-900"
+        >
+        <button @click="increaseQuantity" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 transition duration-150 ease-in-out text-gray-700 font-bold">+</button>
+      </div>
+
+      <button @click="addToCart" class="bg-zad-green hover:bg-green-700 text-white font-bold py-2 px-6 rounded transition duration-300">
+        إضافة إلى السلة
+      </button>
+    </div>
+  </div>
+  <div v-else class="text-center py-10">
+    جاري تحميل المنتج...
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import ProductCard from './ProductCard.vue'
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 
-const router = useRouter()
-const selectedCategory = ref('all')
-// Helper function to generate placeholder image URLs
-const products = ref([
+// Using localStorage for cart state
+// Temporary product list (ideally fetch this from a store or API)
+const allProducts = ref([
   { id: 1, name: 'كسكس', price: 12, category: 'الموروث الليبي', images: ['https://www.cookingwithalia.com/wp-content/uploads/2016/04/rsz_couscous1-cropped.jpg'], description: 'الكسكس الليبي هو طبق تقليدي عريق يحمل في طياته تاريخاً غنياً ونكهات أصيلة تعكس كرم الضيافة الليبية. يُصنع الكسكس من سميد القمح الصلب، ويتم تحضيره على البخار ليصبح خفيفاً ورقيقاً. يُقدم عادة مع مرق غني بالخضروات واللحم (غالباً لحم الضأن أو الدجاج)، ويُزين بالحمص والبصل المكرمل. يعتبر الكسكس وجبة متكاملة ومغذية، فهو مصدر ممتاز للكربوهيدرات المعقدة التي تمنح الجسم الطاقة اللازمة للنشاط اليومي. كما أنه غني بالألياف الغذائية التي تساعد على تحسين عملية الهضم وتعزيز صحة الجهاز الهضمي بشكل عام. بالإضافة إلى ذلك، يحتوي الكسكس على مجموعة من الفيتامينات والمعادن الضرورية للجسم، مثل فيتامينات ب والحديد والمغنيسيوم. تحضير الكسكس وتناوله يمثل جزءاً هاماً من التراث الثقافي الليبي، وغالباً ما يكون محور التجمعات العائلية والاحتفالات. إنه ليس مجرد طعام، بل هو تجربة حسية وثقافية تعبر عن الهوية الليبية الأصيلة.' },
   { id: 2, name: 'مهلبية الشوفان', price: 20, category: 'الموروث الليبي', images: ['https://scontent.fmji2-1.fna.fbcdn.net/v/t39.30808-6/464386174_3923242391281323_8476364299146732913_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=aa7b47&_nc_ohc=-i8PmFFYACsQ7kNvwGoZQwn&_nc_oc=Admz3cEto3w2h0bbaDQ5uGwP316XkFMaC3FOsSjIC5IuI1IW2mdTIdnZXY7z5pn27MQ&_nc_zt=23&_nc_ht=scontent.fmji2-1.fna&_nc_gid=i-SNR0x4DNzURtci4bHeEg&oh=00_AfGZRtm5NoNrpr8QrstjGoTkfR-pcwuV8iqFyeNPv5e4Hw&oe=68162E90'], description: 'مهلبية الشوفان هي حلوى تقليدية شهيرة في ليبيا، تتميز بقوامها الكريمي ونكهتها اللذيذة. تُعد هذه المهلبية باستخدام الشوفان والحليب والسكر، وغالباً ما تُنكه بماء الورد أو ماء الزهر لإضفاء رائحة عطرية مميزة. تُقدم باردة كتحلية منعشة، وتُزين عادة بالقرفة أو المكسرات المفرومة. تعتبر مهلبية الشوفان خياراً صحياً نسبياً مقارنة بالحلويات الأخرى، حيث أن الشوفان مصدر غني بالألياف بيتا جلوكان التي تساعد على خفض الكوليسترول وتحسين صحة القلب. كما أن الشوفان يوفر طاقة مستدامة ويساعد على الشعور بالشبع لفترة أطول. الحليب المستخدم في تحضيرها يضيف الكالسيوم والبروتين الضروريين لصحة العظام والعضلات. هذه الحلوى سهلة الهضم ومناسبة لمختلف الأعمار، وتعتبر خياراً ممتازاً لوجبة إفطار سريعة ومغذية أو كتحلية خفيفة بعد الوجبات. إنها تجمع بين الطعم الرائع والفوائد الصحية، مما يجعلها محبوبة لدى الكثيرين في ليبيا.' },
   { id: 3, name: 'خبزة العدس', price: 18, category: 'الموروث الليبي', images: ['https://scontent.fmji2-1.fna.fbcdn.net/v/t1.6435-9/130534107_3360701347488840_9154862791638635310_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=833d8c&_nc_ohc=z8hjARuBWCYQ7kNvwFLbdNd&_nc_oc=AdmPPDd9FFTS62H3dRiVlOQQirnfi-I4IC2xf9QRuxXfHwwqiCC3cBeSEYtW5w7Yiug&_nc_zt=23&_nc_ht=scontent.fmji2-1.fna&_nc_gid=_Puy92W10ZJ_-d-JUNdZLw&oh=00_AfFxVVNXNBLGGouFrmtghfv_9aPkacOT2DthJAPEw-AOSQ&oe=6837CD0A'], description: 'خبزة العدس الليبية هي طبق شعبي تقليدي يعكس بساطة وغنى المطبخ الليبي. تُعد هذه الخبزة بشكل أساسي من العدس المطبوخ والمهروس، والذي يُخلط مع الدقيق والتوابل لتشكيل عجينة تُخبز بعد ذلك. تتميز بنكهتها الترابية الغنية وقوامها الكثيف والمشبع. غالباً ما تُقدم كوجبة رئيسية أو كطبق جانبي، وتُؤكل عادة مع زيت الزيتون أو المرق. العدس هو المكون الرئيسي هنا، وهو مصدر قوة غذائية. يعتبر العدس من البقوليات الغنية جداً بالبروتين النباتي، مما يجعله خياراً ممتازاً للنباتيين ومصدراً هاماً للبروتين للجميع. كما أنه يحتوي على كميات كبيرة من الألياف الغذائية التي تعزز صحة الجهاز الهضمي وتساعد على تنظيم مستوى السكر في الدم. بالإضافة إلى ذلك، العدس غني بالحديد، مما يساعد في الوقاية من فقر الدم، ويحتوي على حمض الفوليك وفيتامينات ب الأخرى الضرورية لصحة الجسم. خبزة العدس هي مثال رائع على كيفية تحويل مكونات بسيطة ومغذية إلى طبق لذيذ ومفيد يعكس التراث الغذائي للمنطقة.' },
@@ -48,77 +76,84 @@ const products = ref([
   { id: 20, name: 'عسل جبلي', price: 35, category: 'العسل', images: ['https://qaenat.com/cdn/shop/articles/25d9a09e7bcfcd81f04ac571336b78de.jpg?v=1663847880&width=700'], description: 'عسل الجبلي هو نوع من العسل يُنتج من رحيق الأزهار والنباتات التي تنمو في المناطق الجبلية الوعرة. غالباً ما تكون هذه المناطق أقل تلوثاً وأكثر تنوعاً نباتياً، مما يمنح العسل الجبلي خصائص فريدة ونكهة مميزة. يتميز بلونه الداكن وقوامه الكثيف ونكهته القوية والغنية التي تعكس تنوع مصادر الرحيق. يُعتبر عسل الجبلي من أنواع العسل ذات القيمة الغذائية والعلاجية العالية، ويُستخدم في الطب التقليدي لفوائده المتعددة. يُعرف بخصائصه المقوية للجسم والمفيدة للجهاز التنفسي. يُعتقد أنه يساعد في علاج السعال، التهاب الحلق، ونزلات البرد. كما أنه غني بمضادات الأكسدة التي تساهم في حماية الجسم من التلف الخلوي وتعزيز صحة الجهاز المناعي. قد يكون له أيضاً خصائص مضادة للبكتيريا والالتهابات. يُستخدم عسل الجبلي كمحلي طبيعي صحي، ويمكن تناوله مباشرة أو إضافته إلى المشروبات والأطعمة للاستفادة من نكهته الغنية وفوائده الصحية. إنه منتج طبيعي قيم يعكس نقاء البيئة الجبلية وتنوعها النباتي.' },
 ])
 
-const filteredProducts = computed(() => {
-  if (selectedCategory.value === 'all') {
-    return products.value
-  } else {
-    return products.value.filter(product => product.category === selectedCategory.value)
+const route = useRoute()
+const product = ref(null)
+const mainImage = ref('')
+const quantity = ref(1)
+
+onMounted(() => {
+  const productId = parseInt(route.params.id)
+  product.value = allProducts.value.find(p => p.id === productId)
+  if (product.value && product.value.images.length > 0) {
+    mainImage.value = product.value.images[0] // Set initial main image
   }
 })
 
-const navigateToProduct = (productId) => {
-  router.push({ name: 'ProductDetail', params: { id: productId } })
+const setMainImage = (imageUrl) => {
+  mainImage.value = imageUrl
 }
+
+const increaseQuantity = () => {
+  quantity.value++
+}
+
+const decreaseQuantity = () => {
+  if (quantity.value > 1) {
+    quantity.value--
+  }
+}
+
+const addToCart = () => {
+  if (product.value) {
+    console.log(`Adding ${quantity.value} of ${product.value.name} (ID: ${product.value.id}) to cart. Price: ${product.value.price}`)
+    // Get existing cart from localStorage or initialize an empty array
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]')
+
+    // Check if product already exists in cart
+    const existingProductIndex = cart.findIndex(item => item.id === product.value.id)
+
+    if (existingProductIndex > -1) {
+      // Update quantity if product exists
+      cart[existingProductIndex].quantity += quantity.value
+    } else {
+      // Add new product to cart
+      cart.push({
+        id: product.value.id,
+        name: product.value.name,
+        price: product.value.price, // Price is already a number
+        quantity: quantity.value,
+        image: product.value.images[0] // Add main image for cart display
+      })
+    }
+
+    // Save updated cart back to localStorage
+    localStorage.setItem('cart', JSON.stringify(cart))
+    // Dispatch event for header update
+    window.dispatchEvent(new CustomEvent('cart-updated'));
+
+    alert(`${quantity.value} ${product.value.name} تمت إضافته إلى السلة!`) // Keep alert for user feedback
+  }
+}
+
 </script>
 
 <style scoped>
-.product-section {
-  display: flex;
-  flex-direction: row;
+.product-detail-view {
+  direction: rtl; /* Right-to-left layout */
 }
 
-.filter {
-  width: 25%;
-  padding: 20px 0PX;
-  order: 1;
-  border-bottom: 1px solid #ccc;
-  border-left: 1px solid #ccc;
-  
+.thumbnail-images img {
+  max-width: calc(25% - 6px); /* Adjust width considering potential gap/margin */
+  height: auto;
 }
 
-.filter-buttons {
-  display: flex;
-  flex-direction: column;
+/* Ensure quantity input arrows are hidden for custom styling */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
-
-.filter-buttons button {
-  padding: 10px 15px;
-  margin-bottom: 5px;
-  background-color: white;
-  border: none;
-  border-radius: 5px;
-  text-align: right;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.filter-buttons button:hover {
-  background-color: #ddd;
-}
-
-.products {
-  width: 75%;
-  padding: 20px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  order: 2;
-  padding-bottom: 90px;
-}
-
-@media (max-width: 768px) {
-  .products {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 480px) {
-  .products {
-    grid-template-columns: repeat(1, 1fr);
-  }
-}
-
-.product-card {
-  width: 100%;
+input[type=number] {
+  -moz-appearance: textfield; /* Firefox */
 }
 </style>

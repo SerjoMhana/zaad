@@ -4,21 +4,21 @@ import { ref, onMounted, onUnmounted } from 'vue';
 const slides = ref([
   {
     id: 1,
-    image: 'https://images.pexels.com/photos/31653129/pexels-photo-31653129/free-photo-of-delicious-asian-curry-in-tokyo-restaurant.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1=Slide+1', // Placeholder Image 1
-    title: 'عنوان الشريحة الأولى',
-    description: 'وصف قصير للشريحة الأولى يوضح محتواها.',
+    image: 'https://static.srpcdigital.com/styles/1037xauto/public/2025-03/985524.jpeg.webp?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1=Slide+1', // Placeholder Image 1
+    title: 'مرحبًا بكم في زاد',
+    description: 'منصتكم الموثوقة لبيع المنتجات الطبيعية عالية الجودة، حيث نؤمن بأن الصحة أسلوب حياة.',
   },
   {
     id: 2,
     image: 'https://images.pexels.com/photos/1640775/pexels-photo-1640775.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2=Slide+2', // Placeholder Image 2
-    title: 'عنوان الشريحة الثانية',
-    description: 'هذا هو الوصف الخاص بالشريحة الثانية.',
+    title: 'خيارات طبيعية لدعم عافيتكم',
+    description: 'نسعى لتقديم أفضل الخيارات الطبيعية لدعم عافيتكم اليومية، مع محتوى توعوي يثري معرفتكم الصحية.',
   },
   {
     id: 3,
-    image: 'https://images.pexels.com/photos/33783/olive-oil-salad-dressing-cooking-olive.jpg?auto=compress&cs=tinysrgb&w=600=Slide+3', // Placeholder Image 3
-    title: 'عنوان الشريحة الثالثة',
-    description: 'محتوى وصفي للشريحة الثالثة والأخيرة.',
+    image: 'https://media.assettype.com/sabq%2Fimport%2Fuploads%2Fmaterial-file%2F619b3096544a69d0e48b45fd%2F619b309295311.jpg?w=768&auto=format%2Ccompress&fit=max?auto=compress&cs=tinysrgb&w=600=Slide+3', // Placeholder Image 3
+    title: 'ابدأ رحلتك نحو صحة أفضل',
+    description: 'في زاد، نرافقكم في رحلتكم نحو أسلوب حياة أكثر توازنًا وحيوية. اكتشفوا منتجاتنا، واستلهموا نصائحنا، وابدأوا رحلتكم اليوم.',
   },
 ]);
 
